@@ -4,10 +4,9 @@ endif
 let g:loaded_fzf_projectionist = 1
 
 function! fzf_projectionist#search_projections(type) abort
-  let projections = projectionist#navigation_commands()
-  if projections != {}
-    if has_key(projections, a:type)
-      let subset =  projections[a:type]
+  if exists('b:projections ') && b:projections != {}
+    if has_key(b:projections, a:type)
+      let subset =  b:projections[a:type]
       let cwd = getcwd()
       for pair in subset
         if cwd =~ pair[0]
@@ -26,9 +25,9 @@ function! fzf_projectionist#search_projections(type) abort
 endfunction
 
 function! fzf_projectionist#add_projections() abort
-  let projections = projectionist#navigation_commands()
-  if projections != {}
-    for [type, stuff] in items(projections)
+  let b:projections = projectionist#navigation_commands()
+  if b:projections != {}
+    for [type, stuff] in items(b:projections)
       execute 'command! '
             \ 'FZF' . type
             \ " call fzf_projectionist#search_projections('" . type ."')"
