@@ -1,9 +1,9 @@
-# FZF Projectionist
+# Fuzzy Projectionist
 
 Project navigation and fuzzy finders combined!
 
 Use projections and FZF together to navigate projects with ease.
-![](https://raw.githubusercontent.com/c-brenn/fzf-projectionist.vim/master/assets/search.gif)
+
 ## Features
 
 Integrates with [vim-projectionist][] and [fzf][] to allow you to narrow the
@@ -33,11 +33,14 @@ With this minimal configuration for a Rails project:
 }
 ```
 
-You now have three new commands available:
+You can now use FZF when projecting around the project with the functions:
 
-- `FZFmodel`
-- `FZFcontroller`
-- `FZFview`
+- `fuzzy_projectionist#projection_for_type(type)`
+  - fuzzy search for projections for the given type in the cws
+  - eg `fuzzy_projectionist#projection_for_type('model')`
+- `fuzzy_projectionist#choose_projection()`
+  - choose which type of file to project
+
 
 Use enter to open the file in the current buffer, `ctrl-x` to open in a new
 split, `ctrl-v` for a vertical split or `ctrl-t` for a new tab.
