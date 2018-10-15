@@ -1,5 +1,5 @@
 if exists('g:loaded_fuzzy_projectionist') || &cp
-  " finish
+  finish
 endif
 let g:loaded_fuzzy_projectionist = 1
 let b:projections = {}
@@ -80,12 +80,10 @@ function! s:fzf_source(g) abort
   endif
   let after = s:after_glob(a:g)
   let cmd = cmd . '| sed "s|'.after.'\$||"'
-  echom cmd
   return cmd
 endfunction
 
 func! s:sink(lines, dir, after) abort
-  echom 'fuzzy proj sink '.len(a:lines)
   if len(a:lines) < 2 | return | endif
   let cmd = get({'ctrl-x': 'split',
                \ 'ctrl-v': 'vertical split',
@@ -109,7 +107,6 @@ function! fuzzy_projectionist#projection_for_type(type) abort
         let Func   = { lines -> s:sink(lines, dir, after) }
         let fzf_options = '--expect=ctrl-t,ctrl-v,ctrl-x'
         let opts   = fzf#wrap(a:type, { 'source': source, 'dir': dir, 'sink*': Func, 'options': fzf_options }, 0)
-
         call fzf#run(opts)
       else
         echo 'No ' . a:type . ' projections for this project'
@@ -157,6 +154,8 @@ function! fuzzy_projectionist#available_projections() abort
   return {}
 endfunction
 
+let s:prefixes = ['E', 'edit']
+
 function! s:extract_projections(raw_projections) abort
   let b:projections = {}
   for [type, projections] in items(a:raw_projections)
@@ -165,17 +164,15 @@ function! s:extract_projections(raw_projections) abort
        let b:projections[working_dir] = {}
      endif
      let b:projections[working_dir][type] = projection_path
-     " fnamemodify(projection_path, ":p:h")
    endfor
+   call fuzzy_projectionist#define_command(type)
   endfor
 endfunction
 
-function! fuzzy_projectionist#define_command(command, patterns) abort
-  for [prefix, excmd] in items(s:prefixes)
-    execute 'command! -buffer -bar -bang -nargs=* -complete=customlist,s:projection_complete'
-          \ prefix . substitute(a:command, '\A', '', 'g')
-          \ ':execute s:open_projection("<mods>", "'.excmd.'<bang>",'.string(a:patterns).',<f-args>)'
-  endfor
+function! fuzzy_projectionist#define_command(command) abort
+  execute 'command! -buffer -bar -bang -nargs=*'
+        \ 'F' . substitute(a:command, '\A', '', 'g')
+        \ ':call fuzzy_projectionist#projection_for_type("'.a:command.'")'
 endfunction
 
 augroup fuzzy_projectionist
