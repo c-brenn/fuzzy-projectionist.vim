@@ -1,4 +1,4 @@
-if exists('g:loaded_fuzzy_projectionist') || &cp
+if exists('g:loaded_fuzzy_projectionist') || &cp || !has('lambda')
   finish
 endif
 let g:loaded_fuzzy_projectionist = 1

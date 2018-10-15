@@ -4,6 +4,8 @@ Project navigation and fuzzy finders combined!
 
 Use projections and FZF together to navigate projects with ease.
 
+Supports Vim >= `7.4.2044` and Neovim (requires `echo has('lambda')`).
+
 ## Features
 
 Integrates with [vim-projectionist][] and [fzf][] to allow you to narrow the
