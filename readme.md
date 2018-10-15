@@ -21,29 +21,36 @@ With this minimal configuration for a Rails project:
 
 ```json
 {
-  "app/models/*rb": {
+  "app/models/*.rb": {
     "type": "model"
   },
-  "app/controllers/*rb": {
+  "app/controllers/*.rb": {
     "type": "controller"
   },
-  "app/views/*rb": {
+  "app/views/*.rb": {
     "type": "view"
   }
 }
 ```
 
-You can now use FZF when projecting around the project with the functions:
+You can now use FZF when projecting around the project with the commands:
+
+- `:Fmodel`
+- `:Fcontroller`
+- `:Fview`
+
+Hit enter to dive into FZF for that type.
+
+When you're in FZF, use `enter` to open the file in the current buffer, `ctrl-x` to open in a new
+split, `ctrl-v` for a vertical split or `ctrl-t` for a new tab.
+
+There are also the following functions defined for further use:
 
 - `fuzzy_projectionist#projection_for_type(type)`
   - fuzzy search for projections for the given type in the cws
   - eg `fuzzy_projectionist#projection_for_type('model')`
 - `fuzzy_projectionist#choose_projection()`
   - choose which type of file to project
-
-
-Use enter to open the file in the current buffer, `ctrl-x` to open in a new
-split, `ctrl-v` for a vertical split or `ctrl-t` for a new tab.
 
 [vim-projectionist]: https://github.com/tpope/vim-projectionist
 [fzf]:               https://github.com/junegunn/fzf

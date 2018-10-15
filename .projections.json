@@ -1,0 +1,4 @@
+{
+  "*.vim": { "type": "vim" },
+  "*.md": { "type": "doc" }
+}

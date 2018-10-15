@@ -37,6 +37,7 @@ function! s:glob_to_regex(g) abort
   else
     let glob = substitute(glob, '\*', ".*", "g")
   endif
+  let glob = glob . "$"
   return glob
 endfunction
 
