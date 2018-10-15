@@ -3,7 +3,6 @@ if exists('g:loaded_fuzzy_projectionist') || &cp || !has('lambda')
 endif
 let g:loaded_fuzzy_projectionist = 1
 let b:projections = {}
-let g:fuzzy_projectionist_finder_command = 'FZF'
 
 " " for if you're ever adding windows support {{{
 " function! fuzzy_projectionist#slash(...) abort
@@ -106,7 +105,7 @@ function! fuzzy_projectionist#projection_for_type(type) abort
         let dir    = cwd."/".s:maxdir(glob)."/"
         let after  = s:after_glob(glob)
         let Func   = { lines -> s:sink(lines, dir, after) }
-        let fzf_options = '--expect=ctrl-t,ctrl-v,ctrl-x'
+        let fzf_options = '--expect=ctrl-t,ctrl-v,ctrl-x --prompt "projectionist:'.a:type.'> "'
         let opts   = fzf#wrap(a:type, { 'source': source, 'dir': dir, 'sink*': Func, 'options': fzf_options }, 0)
         call fzf#run(opts)
       else
@@ -154,8 +153,6 @@ function! fuzzy_projectionist#available_projections() abort
   endif
   return {}
 endfunction
-
-let s:prefixes = ['E', 'edit']
 
 function! s:extract_projections(raw_projections) abort
   let b:projections = {}
