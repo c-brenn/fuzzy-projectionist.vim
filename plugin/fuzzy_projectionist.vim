@@ -53,19 +53,24 @@ endfunction
 "   " return map(matches, 'fnameescape(v:val)')
 " endfunction "}}}
 
-function! s:maxdir(g) abort
+func! s:maxdir(g) abort
   let upto_star = matchstr(a:g, '.*\ze\*')
   return matchstr(upto_star, '.*\ze/')
-endfunction
+endfunc
 
-function! s:after_glob(g) abort
+func! s:before_glob(g) abort
+  let gp = s:glob_portion(a:g)
+  let upto_star = matchstr(gp, '.*\ze\*')
+  return upto_star
+endfunc
+func! s:after_glob(g) abort
   return matchstr(a:g, '[^\*]*$')
-endfunction
+endfunc
 
-function! s:glob_portion(g) abort
+func! s:glob_portion(g) abort
   let maxdir = len(s:maxdir(a:g))
   return a:g[maxdir+1:]
-endfunction
+endfunc
 
 function! s:fzf_source(g) abort
   let cmd = ''
@@ -76,21 +81,22 @@ function! s:fzf_source(g) abort
     let glob = s:glob_portion(a:g)
     " strip leading ./ as well to match fd and plain vim-projectionist
     " POSIX compatible
-    let cmd = 'find . -regex ' . "'".s:glob_to_regex(glob)."'". ' | sed "s|^\./||"'
+    let cmd = 'find . -regex ' . "'".s:glob_to_regex(glob)."'"
   endif
+  let before = s:before_glob(a:g)
   let after = s:after_glob(a:g)
-  let cmd = cmd . '| sed "s|'.after.'\$||"'
+  let cmd = cmd . '| sed -e "s|^\./||" -e "s|'.after.'\$||" -e "s|^'.before.'||"'
   return cmd
 endfunction
 
-func! s:sink(lines, dir, after) abort
+func! s:sink(lines, dir, before, after) abort
   if len(a:lines) < 2 | return | endif
   let cmd = get({'ctrl-x': 'split',
                \ 'ctrl-v': 'vertical split',
                \ 'ctrl-t': 'tabe'}, a:lines[0], 'e')
   let list = a:lines[1:]
 
-  let first = a:dir . list[0] . a:after
+  let first = a:dir . a:before . list[0] . a:after
   execute cmd escape(first, ' %#\')
 endfunc
 
@@ -103,8 +109,9 @@ function! fuzzy_projectionist#projection_for_type(type) abort
         let glob   = projections_for_cwd[a:type]
         let source = s:fzf_source(glob)
         let dir    = cwd."/".s:maxdir(glob)."/"
+        let before  = s:before_glob(glob)
         let after  = s:after_glob(glob)
-        let Func   = { lines -> s:sink(lines, dir, after) }
+        let Func   = { lines -> s:sink(lines, dir, before, after) }
         let fzf_options = '--expect=ctrl-t,ctrl-v,ctrl-x --prompt "projectionist:'.a:type.'> "'
         let opts   = fzf#wrap(a:type, { 'source': source, 'dir': dir, 'sink*': Func, 'options': fzf_options }, 0)
         call fzf#run(opts)
