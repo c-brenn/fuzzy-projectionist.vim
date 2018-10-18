@@ -141,13 +141,19 @@ func! s:sink(lines, d_workdir, d_glob, ...) abort
   execute cmd first
 endfunc
 
-func! s:patterns_to_cmd(patterns)
+func! s:patterns_to_cmd(patterns, depth)
   let uniq = {}
   " build a ;-separated list of commands to deliver all the different
   " projection patterns in s:decode()-able format
   let accumulated = ''
+  let d = 0
+  let maxdepth = a:depth
+  if  maxdepth == 0 | let maxdepth = len(a:patterns) | endif
+  echom maxdepth
   for [dir, glob] in a:patterns
     if has_key(uniq, dir) && has_key(uniq[dir], glob) | continue | endif
+    if !has_key(uniq, dir) | let d = d + 1 | endif
+    if d > maxdepth | break | endif
     let uniq[dir] = {} | let uniq[dir][glob] = 1
     let accumulated = accumulated . s:fzf_source(dir, glob)
   endfor
@@ -168,13 +174,12 @@ func! fuzzy_projectionist#open_projection(type, patterns, ...)
   endif
 
   if len(a:patterns) == 0 | return | endif
-  let limited  = a:patterns[:depth - 1]
-  let cmd = s:patterns_to_cmd(limited)
+  let cmd = s:patterns_to_cmd(a:patterns, depth)
   " use the first listed pattern (the nearest workdir) for use as a file
   " creation default
   let opts   = fzf#wrap(a:type, {
         \'source': cmd,
-        \'sink*': { lines -> s:sink(lines, limited[0][0], limited[0][1]) },
+        \'sink*': { lines -> s:sink(lines, a:patterns[0][0], a:patterns[0][1]) },
         \'options': extra_opts + [
         \ '--expect=ctrl-t,ctrl-v,ctrl-x',
         \ '--with-nth=5',
