@@ -12,8 +12,7 @@ Integrates with [vim-projectionist][] and [fzf][] to allow you to narrow the
 list of files to fuzzy search.
 
 [vim-projectionist][] exposes commands (`:Etype`, `:Vtype`, `:Stype` ...) for
-quick project navigation and [fzf][] is a speedy fuzzy finder. This plugin
-combines the two, exposing one command for each type of file in your project.
+quick project navigation and [fzf][] is a speedy fuzzy finder. This plugin combines the two, exposing one command for each type of file in your project.
 You can use FZF's key bindings to open the file in a new buffer/split/tab
 instead of having to map each of the different projectionist commands.
 
@@ -54,5 +53,14 @@ There are also the following functions defined for further use:
 - `fuzzy_projectionist#choose_projection()`
   - choose which type of file to project
 
+
+## Testing
+
+There is a comprehensive test suite written in [vader][]. Run `./test/run.sh 
+--help` for more info.
+
 [vim-projectionist]: https://github.com/tpope/vim-projectionist
 [fzf]:               https://github.com/junegunn/fzf
+[vader]:             https://github.com/junegunn/vader.vim
+
+
