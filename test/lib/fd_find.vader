@@ -1,0 +1,22 @@
+Execute (fd : tests):
+  let b:all_txt     = [ 'filea', 'fileb', 'subdir/filec' ]
+  let b:all_txt_dir = [ 'dir/filea', 'dir/fileb', 'dir/subdir/filec' ]
+
+  Assert 1 == executable('fd'), 'no fd executable'
+  Assert b:AllMatches_fd(  'all.vader', []), 'no stars at all'
+
+  Assert b:AllMatches_fd(  '*.txt', b:all_txt_dir), 'fd all *.txt'
+  Assert b:AllMatches_fd(  '**/*.txt', b:all_txt_dir), 'fd **/*.txt'
+  Assert b:AllMatches_fd(  'dir/*.txt', b:all_txt), 'fd all dir/*.txt'
+  Assert b:AllMatches_fd(  'dir/*a.txt', ['dir/filea']), 'fd *a'
+  Assert b:AllMatches_fd(  'dir/*c.txt', ['dir/subdir/filec']), 'fd *c'
+  Assert b:AllMatches_fd(  '**/subdir/*.txt', ['dir/subdir/filec']), 'fd **/subdir/*.txt'
+
+Execute (find : tests):
+  Assert b:AllMatches_find('*.txt', b:all_txt_dir), 'find all *.txt'
+  Assert b:AllMatches_find('**/*.txt', b:all_txt_dir), 'fd **/*.txt'
+  Assert b:AllMatches_find('dir/*.txt', b:all_txt), 'find all dir/*.txt'
+  Assert b:AllMatches_find('dir/*a.txt', ['dir/filea']), 'find *a'
+  Assert b:AllMatches_find('dir/*c.txt', ['dir/subdir/filec']), 'find *c'
+  Assert b:AllMatches_find('**/subdir/*.txt', ['dir/subdir/filec']), 'find **/subdir/*.txt'
+

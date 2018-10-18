@@ -1,0 +1,43 @@
+Execute (setup):
+  let sid = matchlist(execute('scriptnames'), 
+      \'\([0-9]\+\): [^ ]*autoload/fuzzy_projectionist.vim')[1]
+  function! ScriptLocal(n,s)
+    return funcref('<SNR>'.a:s.'_'.a:n)
+  endfunction
+  " buffer local so that Reassenble can use them
+  let b:maxdir          = ScriptLocal('maxdir', sid)
+  let b:before_glob     = ScriptLocal('before_glob', sid)
+  let b:after_glob      = ScriptLocal('after_glob', sid)
+  let b:upto_star       = ScriptLocal('upto_star', sid)
+  let b:glob_portion    = ScriptLocal('glob_portion', sid)
+  let b:glob_to_regex   = ScriptLocal('glob_to_regex', sid)
+  let b:fzf_source      = ScriptLocal('fzf_source', sid)
+  let b:source_fd       = ScriptLocal('source_fd', sid)
+  let b:source_find     = ScriptLocal('source_find', sid)
+  let b:patterns_to_cmd = ScriptLocal('patterns_to_cmd', sid)
+  let b:decode          = ScriptLocal('decode', sid)
+  let b:sink            = ScriptLocal('sink', sid)
+
+  " to exercise those three functions
+  let b:Reassemble = { g, q -> b:maxdir(g).b:before_glob(g).q.b:after_glob(g) }
+
+  fun! Reduce(f, list, id)
+      let acc = a:id
+      for value in a:list[1:]
+          let acc = a:f(acc, value)
+      endfor
+      return acc
+  endfun
+  Assert Reduce({i -> i == 0}, [0,0,0], 1)
+
+  let b:HasAll = { list, ideal -> len(ideal) == len(list) &&
+                                \Reduce({ i, item -> index(list, item) >= 0 }, ideal, 1) }
+  let b:Matches_fd = { glob -> 
+        \ split(system('cd ./'.b:maxdir(glob) .' && '
+        \.b:source_fd(glob)), '\n') }
+  let b:Matches_find = { glob -> 
+        \ split(system('cd ./'.b:maxdir(glob) .' && '
+        \.b:source_find(glob)), '\n') }
+  let b:AllMatches_fd   = { glob, res -> b:HasAll(b:Matches_fd(glob), res) }
+  let b:AllMatches_find = { glob, res -> b:HasAll(b:Matches_find(glob), res) }
+

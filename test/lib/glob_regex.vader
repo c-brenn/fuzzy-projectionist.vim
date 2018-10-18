@@ -1,0 +1,79 @@
+Execute (glob : upto_star):
+  AssertEqual '',             b:upto_star('*')
+  AssertEqual 'blah',         b:upto_star('blah*****')
+  AssertEqual 'path/blah',    b:upto_star('path/blah*.txt')
+
+Execute (glob : maxdir):
+  AssertEqual '',             b:maxdir('*.vim')
+  AssertEqual 'path/',        b:maxdir('path/*.txt')
+  " this is where it differs from upto_star
+  AssertEqual 'path/',        b:maxdir('path/blah*.txt')
+
+Execute (glob : simple single star):
+  AssertEqual '/file.txt',    b:after_glob('path/*/file.txt')
+  AssertEqual 'blah',         b:before_glob('path/blah*.txt')
+  AssertEqual '*.txt',        b:glob_portion('path/*.txt')
+
+Execute (glob : **/blah*.txt):
+  AssertEqual 'path/',        b:maxdir('path/**/blah*.txt')
+  AssertEqual '',             b:before_glob('path/**/blah*.txt')
+  AssertEqual '**/blah*.txt', b:glob_portion('path/**/blah*.txt')
+  AssertEqual 'blah*.txt',    b:glob_portion('path/blah*.txt')
+  AssertEqual '.txt',         b:after_glob('path/**/blah*.txt')
+
+Execute (glob : path reassembly):
+  AssertEqual 'path/to/file.txt',         b:Reassemble('path/*.txt', 'to/file')
+  AssertEqual 'path/to/file.txt',         b:Reassemble('path/*/file.txt', 'to')
+  AssertEqual 'path/to/file.txt',         b:Reassemble('path/**/file.txt', 'to')
+  AssertEqual 'path/to/file.txt',         b:Reassemble('**/file.txt', 'path/to')
+  AssertEqual 'path/to/prefix-file.txt',  b:Reassemble('path/to/prefix-*.txt', 'file')
+  AssertEqual 'path/to/file.ext',         b:Reassemble('path/to/file.*', 'ext')
+
+Execute (regex : literals):
+  let MatchRegex = { path, glob -> 0  <= match(path, b:glob_to_regex(glob )) }
+  let NotRegex   = { path, glob -> -1 == match(path, b:glob_to_regex(glob )) }
+  let LogRegex   = { glob -> glob . ' => ' . b:glob_to_regex(glob )}
+
+  " we are only using the .*, [^abc] and \* features of regexes really,
+  " so vim's match() is fine even though fd and find -regex are actually
+  " executing them.
+  Assert NotRegex('path/$ext', '*.ext'), 'literal dot'
+  Assert MatchRegex('path/"file".ext', '"file"*.ext'), 'double quote'
+  Assert NotRegex('path/file.ext', '"file"*.ext'),     'not: double quote'
+  Assert MatchRegex("path/'file'.ext", "'file'*.ext"), 'single quote'
+  Assert NotRegex('path/file.ext', "'file'*.ext"),     'not: single quote'
+
+Execute (regex : single *):
+  Assert MatchRegex('', '')
+  Assert MatchRegex('any/file-ever.txt', '*')
+  Assert MatchRegex('file-ever.txt', '*')
+  Assert MatchRegex('file.txt', '*.txt')
+  Assert MatchRegex('path/to/file.txt', '*.txt')
+
+Execute (regex : **/* <-> * equivalence):
+  Assert MatchRegex('path/file.txt', '**/*.txt')
+  Assert MatchRegex('path/to/file.txt', '**/*.txt')
+  Assert MatchRegex('path/file.txt', 'path/**/*.txt')
+  Assert MatchRegex('path/to/file.txt', 'path/**/*.txt')
+  Assert MatchRegex('path/to/file.txt', 'path/**/*')
+
+Execute (regex : deeper than 1 dir):
+  Assert MatchRegex('path/to/snd/b.rb', 'path/**/*.rb')
+  Assert MatchRegex('path/to/snd/b.rb', 'path/*.rb')
+
+Execute (regex : no glob):
+  Assert MatchRegex('path/to/file.txt', 'path/to/file.txt')
+
+Execute (regex : more dirs after **):
+  Assert MatchRegex('path/to/file.txt', '**/to/file.txt')
+
+Execute (regex : trailing chars):
+  Assert NotRegex('path/to/file.txt.GZIP', '*.txt')
+
+Execute (regex : split **, dirs, then *):
+  Assert MatchRegex('path/to/file.txt', '**/to/*.txt')
+  Assert MatchRegex('path/to/XX/XX/file.txt', '**/to/**/*.txt'), 'double /**/'
+  Assert NotRegex('path/XX/file.txt',       '**/to/*.txt'), 'not: XX'
+  Assert NotRegex('path/to/XX/XX/fileb',    '**/to/*b'), 'not: a*b'
+  Assert NotRegex('path/to/XX/XX/file.txt', '**/to/*.txt'), 'not: XX/XX : '
+

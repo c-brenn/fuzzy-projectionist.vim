@@ -1,0 +1,4 @@
+{
+  "*.txt": { "type": "FZPTESTTYPE" },
+  "*.sh": { "type": "FZPTESTTYPE" }
+}
