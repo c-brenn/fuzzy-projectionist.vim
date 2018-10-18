@@ -8,7 +8,7 @@ function! s:count_stars(proj_glob) abort
 endfunction
 
 func! s:upto_star(g)
-    return matchstr(a:g, '[^\*]*\ze\*')
+  return matchstr(a:g, '[^\*]*\ze\*')
 endfunc
 
 func! s:maxdir(g) abort
@@ -43,7 +43,7 @@ function! s:glob_to_regex(g) abort
     " cater for ..../k*k where k = not slash or *
     " inside [^], any char is a literal except ]
     let glob = substitute(glob, '\v([^/*]*)\*([^/*]*)$',
-                \   "\\1________FZP_FILENAME________\\2", "g")
+          \   "\\1________FZP_FILENAME________\\2", "g")
     " any remaining **/ glob is the regex .*
     " (allow xxx/**/*.txt to match xxx/thing.txt)
     let glob = substitute(glob, '/\*\**/', "/*", "g")
@@ -59,17 +59,17 @@ function! s:glob_to_regex(g) abort
 endfunction
 
 function! s:source_fd(g)
-    let glob = s:glob_portion(a:g)
-    let cmd = 'fd --type f --full-path '. "'" . s:glob_to_regex(glob) . "'"
-    return s:sed_before_after(a:g, cmd)
+  let glob = s:glob_portion(a:g)
+  let cmd = 'fd --type f --full-path '. "'" . s:glob_to_regex(glob) . "'"
+  return s:sed_before_after(a:g, cmd)
 endfunction
 
 function! s:source_find(g)
-    let glob = s:glob_portion(a:g)
-    " strip leading ./ as well to match fd and plain vim-projectionist
-    " POSIX compatible
-    let cmd = 'find . -regex ' . "'".s:glob_to_regex(glob)."'"
-    return s:sed_before_after(a:g, cmd)
+  let glob = s:glob_portion(a:g)
+  " strip leading ./ as well to match fd and plain vim-projectionist
+  " POSIX compatible
+  let cmd = 'find . -regex ' . "'".s:glob_to_regex(glob)."'"
+  return s:sed_before_after(a:g, cmd)
 endfunction
 
 func! s:sed_before_after(g, cmd)
@@ -79,31 +79,31 @@ func! s:sed_before_after(g, cmd)
 endfunc
 
 function! s:fzf_source(dir, g) abort
-    let maxdir = s:maxdir(a:g)
-    let before = s:before_glob(a:g)
-    let after  = s:after_glob(a:g)
-    if s:count_stars(a:g) == 0
-        return 'true'
-    endif
-    if executable('fd')
-        let cmd = s:source_fd(a:g)
-    else
-        let cmd =  s:source_find(a:g)
-    endif
-    let cmd = 'cd ' . shellescape(a:dir.'/'.maxdir). ' && ' . cmd . ''
-    " see s:decode
-    let cmd = cmd . ' | awk ''{print "'
-                \ . (a:dir) . ':'
-                \ . (maxdir) . ':'
-                \ . (before) . ':'
-                \ . (after) . ':'
-                \ . '" $0 }''; '
-    return cmd
+  let maxdir = s:maxdir(a:g)
+  let before = s:before_glob(a:g)
+  let after  = s:after_glob(a:g)
+  if s:count_stars(a:g) == 0
+    return 'true'
+  endif
+  if executable('fd')
+    let cmd = s:source_fd(a:g)
+  else
+    let cmd =  s:source_find(a:g)
+  endif
+  let cmd = 'cd ' . shellescape(a:dir.'/'.maxdir). ' && ' . cmd . ''
+  " see s:decode
+  let cmd = cmd . ' | awk ''{print "'
+        \ . (a:dir) . ':'
+        \ . (maxdir) . ':'
+        \ . (before) . ':'
+        \ . (after) . ':'
+        \ . '" $0 }''; '
+  return cmd
 endfunction
 
 func! s:decode(line)
-    let [workdir, maxdir, before, after, match] = split(a:line, ':')
-    return escape( workdir . '/' . maxdir . before . match . after , ' %#\')
+  let [workdir, maxdir, before, after, match] = split(a:line, ':')
+  return escape( workdir . '/' . maxdir . before . match . after , ' %#\')
 endfunc
 
 func! s:sink(lines, d_workdir, d_glob, ...) abort
@@ -119,20 +119,20 @@ func! s:sink(lines, d_workdir, d_glob, ...) abort
     let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
     let cwd = getcwd()
     try
-        " go to projectionist root first, so prompted relative filepath is correct
-        exec 'Pcd'
-        let newfile = escape(a:d_workdir . '/' . s:maxdir(a:d_glob) 
-                    \ . s:before_glob(a:d_glob) . query . s:after_glob(a:d_glob), ' %#\')
-        let display = fnamemodify(newfile, ":~:.")
-        let dir = fnamemodify(newfile, ":p:h")
-        if !should_confirm || 1 == confirm('create new file '.display.' ?', "&Yes (default)\n&No")
-          call mkdir(dir, "p")
-          execute cmd newfile
-        endif
+      " go to projectionist root first, so prompted relative filepath is correct
+      exec 'Pcd'
+      let newfile = escape(a:d_workdir . '/' . s:maxdir(a:d_glob) 
+            \ . s:before_glob(a:d_glob) . query . s:after_glob(a:d_glob), ' %#\')
+      let display = fnamemodify(newfile, ":~:.")
+      let dir = fnamemodify(newfile, ":p:h")
+      if !should_confirm || 1 == confirm('create new file '.display.' ?', "&Yes (default)\n&No")
+        call mkdir(dir, "p")
+        execute cmd newfile
+      endif
     catch
-        return
+      return
     finally
-        exec cd fnameescape(cwd)
+      exec cd fnameescape(cwd)
     endtry
     return
   endif
@@ -142,68 +142,79 @@ func! s:sink(lines, d_workdir, d_glob, ...) abort
 endfunc
 
 func! s:patterns_to_cmd(patterns)
-    let uniq = {}
-    " build a ;-separated list of commands to deliver all the different
-    " projection patterns in s:decode()-able format
-    let accumulated = ''
-    for [dir, glob] in a:patterns
-        if has_key(uniq, dir) && has_key(uniq[dir], glob) | continue | endif
-        let uniq[dir] = {} | let uniq[dir][glob] = 1
-        let accumulated = accumulated . s:fzf_source(dir, glob)
-    endfor
-    return accumulated
+  let uniq = {}
+  " build a ;-separated list of commands to deliver all the different
+  " projection patterns in s:decode()-able format
+  let accumulated = ''
+  for [dir, glob] in a:patterns
+    if has_key(uniq, dir) && has_key(uniq[dir], glob) | continue | endif
+    let uniq[dir] = {} | let uniq[dir][glob] = 1
+    let accumulated = accumulated . s:fzf_source(dir, glob)
+  endfor
+  return accumulated
 endfunc
 
 func! fuzzy_projectionist#open_projection(type, patterns, ...)
-    let extra_opts = get(a:, 1, [])
-    if len(a:patterns) == 0 | return | endif
-    let cmd = s:patterns_to_cmd(a:patterns)
-    " use the first listed pattern (the nearest workdir) for use as a file
-    " creation default
-    let opts   = fzf#wrap(a:type, {
-                \'source': cmd,
-                \'sink*': { lines -> s:sink(lines, a:patterns[0][0], a:patterns[0][1]) },
-                \'options': extra_opts + [
-                \ '--expect=ctrl-t,ctrl-v,ctrl-x',
-                \ '--with-nth=5',
-                \ '-d:',
-                \ '--print-query',
-                \ '--prompt=projectionist:'.a:type.'> '
-                \] }, 0)
-    return fzf#run(opts)
+  let initial_query = get(a:, 1, '')
+  let depth = g:fuzzy_projectionist_depth
+  let extra_opts = get(a:, 2, [])
+
+  if initial_query != ''
+      let extra_opts = extra_opts + ['-1','--query='.initial_query]
+  endif
+
+  if len(a:patterns) == 0 | return | endif
+  let limited  = a:patterns[:depth - 1]
+  let cmd = s:patterns_to_cmd(limited)
+  " use the first listed pattern (the nearest workdir) for use as a file
+  " creation default
+  let opts   = fzf#wrap(a:type, {
+        \'source': cmd,
+        \'sink*': { lines -> s:sink(lines, limited[0][0], limited[0][1]) },
+        \'options': extra_opts + [
+        \ '--expect=ctrl-t,ctrl-v,ctrl-x',
+        \ '--with-nth=5',
+        \ '-d:',
+        \ '--print-query',
+        \ '--prompt=projectionist:'.a:type.'> '
+        \] }, 0)
+  return fzf#run(opts)
 endfunc
 
 function! fuzzy_projectionist#projection_for_type(type) abort
-    if exists('b:fuzzy_projections') && b:fuzzy_projections != {} 
-                \&& has_key(b:fuzzy_projections, a:type)
-        let patterns = b:fuzzy_projections[a:type]
-        call fuzzy_projectionist#open_projection(a:type, patterns)
-    endif
+  if exists('b:fuzzy_projections') && b:fuzzy_projections != {} 
+        \&& has_key(b:fuzzy_projections, a:type)
+    let patterns = b:fuzzy_projections[a:type]
+    call fuzzy_projectionist#open_projection(a:type, patterns, '')
+  endif
 endfunction
 
 function! fuzzy_projectionist#choose_projection() abort
-    if exists('b:fuzzy_projections') && b:fuzzy_projections != {}
-        let index = 1
-        let options = ''
-        let types = []
-        for [type, projections] in items(b:fuzzy_projections)
-            let options = options . "&" . index . " " . type . "\n"
-            let index = index + 1
-            let types = types + [type]
-        endfor
-        let chosen_index = str2nr(confirm("Choose a thing", options, 0)) - 1
-        if chosen_index < 0 | return | endif
-        let chosen_type = types[chosen_index]
-        call fuzzy_projectionist#projection_for_type(chosen_type)
-    endif
+  if exists('b:fuzzy_projections') && b:fuzzy_projections != {}
+    let index = 1
+    let options = ''
+    let types = []
+    for [type, projections] in items(b:fuzzy_projections)
+      let options = options . "&" . index . " " . type . "\n"
+      let index = index + 1
+      let types = types + [type]
+    endfor
+    let chosen_index = str2nr(confirm("Choose a thing", options, 0)) - 1
+    if chosen_index < 0 | return | endif
+    let chosen_type = types[chosen_index]
+    call fuzzy_projectionist#projection_for_type(chosen_type)
+  endif
 endfunction
 
 function! fuzzy_projectionist#add_projections() abort
-    let raw_projections = projectionist#navigation_commands()
-    let b:fuzzy_projections = raw_projections
-    if raw_projections != {}
-        call s:extract_projections(raw_projections)
-    endif
+  let b:fuzzy_projections = projectionist#navigation_commands()
+  if b:fuzzy_projections != {}
+    for [type, projections] in items(b:fuzzy_projections)
+      " for [working_dir, glob] in projections
+      " endfor
+      call fuzzy_projectionist#define_command(type, projections)
+    endfor
+  endif
 endfunction
 
 function! fuzzy_projectionist#available_projections() abort
@@ -213,20 +224,10 @@ function! fuzzy_projectionist#available_projections() abort
   return {}
 endfunction
 
-function! s:extract_projections(raw_projections) abort
-    let b:fuzzy_projections = {}
-    let b:fuzzy_projections = a:raw_projections
-    for [type, projections] in items(b:fuzzy_projections)
-        " for [working_dir, glob] in projections
-        " endfor
-        call fuzzy_projectionist#define_command(type, projections)
-    endfor
-endfunction
-
 function! fuzzy_projectionist#define_command(command, projections) abort
-  execute 'command! -buffer -bar -bang -nargs=*'
+  execute 'command! -buffer -bar -bang -nargs=?'
         \ 'F' . substitute(a:command, '\A', '', 'g')
         \ ':call fuzzy_projectionist#open_projection('
-        \   .string(a:command).', '.string(a:projections).')'
+        \   .string(a:command).', '.string(a:projections).', <f-args>)'
 endfunction
 
