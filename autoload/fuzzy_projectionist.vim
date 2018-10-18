@@ -1,4 +1,4 @@
-if &cp || !has('lambda')
+if &compatible || !has('lambda')
   finish
 endif
 
@@ -157,7 +157,6 @@ endfunc
 func! fuzzy_projectionist#open_projection(type, patterns, ...)
     let extra_opts = get(a:, 1, [])
     if len(a:patterns) == 0 | return | endif
-    echom string(a:patterns)
     let cmd = s:patterns_to_cmd(a:patterns)
     " use the first listed pattern (the nearest workdir) for use as a file
     " creation default
@@ -175,50 +174,36 @@ func! fuzzy_projectionist#open_projection(type, patterns, ...)
 endfunc
 
 function! fuzzy_projectionist#projection_for_type(type) abort
-  if exists('b:fuzzy_projections') && b:fuzzy_projections != {}
-    let cwd = getcwd()
-    if has_key(b:fuzzy_projections, cwd)
-      let projections_for_cwd = b:fuzzy_projections[cwd]
-      if has_key(projections_for_cwd, a:type)
-        let glob   = projections_for_cwd[a:type]
-        call fuzzy_projectionist#open_projection(a:type, cwd, glob)
-      else
-        echo 'No ' . a:type . ' projections for this project'
-      endif
-    else
-      echo 'No projections for this project'
+    if exists('b:fuzzy_projections') && b:fuzzy_projections != {} 
+                \&& has_key(b:fuzzy_projections, a:type)
+        let patterns = b:fuzzy_projections[a:type]
+        call fuzzy_projectionist#open_projection(a:type, patterns)
     endif
-  else
-    echo 'No projections.'
-  endif
 endfunction
 
 function! fuzzy_projectionist#choose_projection() abort
-  if exists('b:fuzzy_projections') && b:fuzzy_projections != {}
-    let cwd = getcwd()
-    if has_key(b:fuzzy_projections, cwd)
-      let options = ""
-      let index = 1
-      let projections = items(b:fuzzy_projections[cwd])
-      for [type, path] in projections
-        let options = options . "&" . index . " " . type . "\n"
-        let index = index + 1
-      endfor
-      let chosen_index = str2nr(confirm("Choose a thing", options, 0)) - 1
-      call fuzzy_projectionist#projection_for_type(projections[chosen_index][0])
-    else
-      echo 'No projections for this project'
+    if exists('b:fuzzy_projections') && b:fuzzy_projections != {}
+        let index = 1
+        let options = ''
+        let types = []
+        for [type, projections] in items(b:fuzzy_projections)
+            let options = options . "&" . index . " " . type . "\n"
+            let index = index + 1
+            let types = types + [type]
+        endfor
+        let chosen_index = str2nr(confirm("Choose a thing", options, 0)) - 1
+        if chosen_index < 0 | return | endif
+        let chosen_type = types[chosen_index]
+        call fuzzy_projectionist#projection_for_type(chosen_type)
     endif
-  else
-    echo 'No projections'
-  endif
 endfunction
 
 function! fuzzy_projectionist#add_projections() abort
-  let raw_projections = projectionist#navigation_commands()
-  if raw_projections != {}
-    call s:extract_projections(raw_projections)
-  endif
+    let raw_projections = projectionist#navigation_commands()
+    let b:fuzzy_projections = raw_projections
+    if raw_projections != {}
+        call s:extract_projections(raw_projections)
+    endif
 endfunction
 
 function! fuzzy_projectionist#available_projections() abort
@@ -230,13 +215,10 @@ endfunction
 
 function! s:extract_projections(raw_projections) abort
     let b:fuzzy_projections = {}
-    for [type, projections] in items(a:raw_projections)
-        for [working_dir, projection_path] in projections
-            if !has_key(b:fuzzy_projections, working_dir)
-                let b:fuzzy_projections[working_dir] = {}
-            endif
-            let b:fuzzy_projections[working_dir][type] = projection_path
-        endfor
+    let b:fuzzy_projections = a:raw_projections
+    for [type, projections] in items(b:fuzzy_projections)
+        " for [working_dir, glob] in projections
+        " endfor
         call fuzzy_projectionist#define_command(type, projections)
     endfor
 endfunction
