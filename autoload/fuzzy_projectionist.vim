@@ -162,6 +162,10 @@ func! fuzzy_projectionist#open_projection(type, patterns, ...)
   if initial_query != ''
       let extra_opts = extra_opts + ['-1','--query='.initial_query]
   endif
+  if g:fuzzy_projectionist_preview == 1
+    let decode='{1}/{2}{3}{5}{4}'
+    let extra_opts = extra_opts +  ['--preview', 'head -n 100 '.decode ]
+  endif
 
   if len(a:patterns) == 0 | return | endif
   let limited  = a:patterns[:depth - 1]
