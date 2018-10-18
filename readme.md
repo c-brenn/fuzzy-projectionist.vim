@@ -42,7 +42,8 @@ You can now use FZF when projecting around the project with the commands:
 
 Hit enter to dive into FZF for that type. Each F command takes an optional
 argument that pre-populates the search query, and jumps directly to a file
-if there is only one match.
+if there is only one match. As with all commands, you can abbreviate where
+possible, like `:Fc hom` to get to your home controller.
 
 When you're in FZF, use `enter` to open the file in the current buffer, `ctrl-x` to open in a new
 split, `ctrl-v` for a vertical split or `ctrl-t` for a new tab.
@@ -54,6 +55,8 @@ There are also the following functions defined for further use:
   - eg `fuzzy_projectionist#projection_for_type('model')`
 - `fuzzy_projectionist#choose_projection()`
   - choose which type of file to project
+
+You can also enable a little preview window with `let g:fuzzy_projectionist_preview = 1`.
 
 ### Note on depth
 
