@@ -149,7 +149,6 @@ func! s:patterns_to_cmd(patterns, depth)
   let d = 0
   let maxdepth = a:depth
   if  maxdepth == 0 | let maxdepth = len(a:patterns) | endif
-  echom maxdepth
   for [dir, glob] in a:patterns
     if has_key(uniq, dir) && has_key(uniq[dir], glob) | continue | endif
     if !has_key(uniq, dir) | let d = d + 1 | endif
