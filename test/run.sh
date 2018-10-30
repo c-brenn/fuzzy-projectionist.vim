@@ -78,6 +78,8 @@ if ! hash vim 2>/dev/null; then
   exit 1
 fi
 
+export SHELL=/bin/sh # for when vim shells out to fzf
+
 run() {
   if [ "$EXIT" == "!" ]; then TEMP=$(mktemp); fi
 
@@ -89,11 +91,12 @@ set rtp+=$PLUGDIR/vim-projectionist
 set rtp+=$FZPDIR
 filetype plugin indent on
 syntax enable
-colors desert256
 nmap ,r :qall<cr>
 nmap ,q :!rm '$WORKDIR/tdd-run'<cr>:qall<cr>
 cd $TESTDIR
 EOF) "+Vader${EXIT}./*"
+
+STATUS=$?
 
   if [ "$EXIT" == "!" ]; then
     cat $TEMP
@@ -110,4 +113,4 @@ else
   run
 fi
 
-exit $?
+exit $STATUS

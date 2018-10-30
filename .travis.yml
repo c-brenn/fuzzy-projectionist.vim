@@ -1,0 +1,22 @@
+# trusty's plain vim package is too old to have +lambda
+# so let's use neovim
+
+before_install:
+  - sudo add-apt-repository --yes ppa:neovim-ppa/unstable
+  - sudo apt-get -qq update
+  - sudo apt-get install -yq neovim
+
+before_script:
+  - nvim --version
+  - rm -rf plugdir
+  - mkdir plugdir
+  - (cd plugdir && git clone https://github.com/junegunn/vader.vim)
+  - (cd plugdir && git clone https://github.com/junegunn/fzf)
+  - (cd plugdir && git clone https://github.com/tpope/vim-projectionist)
+  - (cd plugdir/fzf && ./install --bin)
+  - 'rm -f *.deb' 
+  - 'wget https://github.com/sharkdp/fd/releases/download/v7.2.0/fd_7.2.0_amd64.deb'
+  - 'sudo dpkg -i fd_7.2.0_amd64.deb'
+
+script:
+  - PATH="$PWD/plugdir/fzf/bin:$PATH" ./test/run.sh --exit --plug-dir ./plugdir nvim
