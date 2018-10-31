@@ -1,5 +1,8 @@
 # Fuzzy Projectionist
 
+[![Build 
+Status](https://travis-ci.com/cormacrelf/fuzzy-projectionist.vim.svg?branch=master)](https://travis-ci.com/cormacrelf/fuzzy-projectionist.vim)
+
 Project navigation and fuzzy finders combined!
 
 Use projections and FZF together to navigate projects with ease.
