@@ -1,0 +1,5 @@
+Include: lib/prelude.vader
+Include: lib/fd_find.vader
+Include: lib/glob_regex.vader
+Include: lib/roundtrip.vader
+Include: lib/sink.vader

@@ -1,0 +1,19 @@
+Execute (sink : opens a file):
+  let lines = [
+    \ 'fileb.txt',
+    \ '',
+    \ getcwd().':dir/::.txt:fileb'
+  \]
+  let g:found_fileb = "nope, didn't find it"
+  call b:sink(lines, getcwd(), '*.txt', 'e', 0)
+  AssertEqual 'fileb.txt', expand("%:t")
+
+Execute (sink : creates a file):
+  let lines = [
+    \ 'dir/FZF_QUERY',
+    \ '',
+  \]
+  call b:sink(lines, getcwd(), '*.txt', 'silent !touch', 0)
+  Assert filereadable('./dir/FZF_QUERY.txt'), "didn't create file"
+  exec 'silent !rm -f dir/FZF_QUERY.txt'
+

@@ -1,0 +1,19 @@
+Execute (roundtrip : setup):
+  call ProjectionistDetect('./projections.json')
+  let raw_projections = projectionist#navigation_commands()
+  let type = 'FZPTESTTYPE'
+  Assert has_key(raw_projections, type), 'no '.type.' key'
+  let patterns = raw_projections[type]
+
+Execute (roundtrip : > 1 pattern definition):
+  let b:GetMatch = { i, line -> fnamemodify(b:decode(line), ':.') }
+  let cmd = b:patterns_to_cmd(patterns, 0)
+  let x = map(split(system(cmd), "\n"), b:GetMatch)
+  Assert b:HasAll(x, b:all_txt_dir + ['run.sh'])
+
+Execute (roundtrip : round trip through fzf):
+  let RoundTrip = { cmd, filter -> map(split(system(
+          \ '('.cmd.') | fzf -d: --filter='.filter.' -1'), "\n"), b:GetMatch) }
+  AssertEqual ['run.sh'], RoundTrip(cmd, 'run.sh')
+  AssertEqual ['dir/subdir/filec.txt'], RoundTrip(cmd, 'subdirc')
+

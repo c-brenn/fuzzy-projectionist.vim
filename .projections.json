@@ -1,4 +1,6 @@
 {
   "*.vim": { "type": "vim" },
-  "*.md": { "type": "doc" }
+  "*.md": { "type": "doc" },
+  "test/*.vader": { "type": "test" },
+  "test/runner.sh": { "type": "test" }
 }
